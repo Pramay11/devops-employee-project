@@ -22,6 +22,20 @@ pipeline {
             }
         }
 
+         stage('SonarQube Analysis') {
+            steps {
+                echo 'Analyzing source code using SonarQube'
+
+                script {
+                    def scannerHome = tool 'SonarScanner'
+
+                    withSonarQubeEnv('SonarQube-Local') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                }
+            }
+        }
+
         stage('Build Backend Image') {
             steps {
                 echo 'Building Node.js backend Docker image'
