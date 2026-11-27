@@ -22,7 +22,7 @@ pipeline {
             }
         }
 
-         stage('SonarQube Analysis') {
+        stage('SonarQube Analysis') {
             steps {
                 echo 'Analyzing source code using SonarQube'
 
@@ -75,15 +75,47 @@ pipeline {
                 '''
             }
         }
+
+        stage('Push Images to Docker Hub') {
+            steps {
+                echo 'Logging in to Docker Hub and pushing images'
+
+                withCredentials([
+                    string(
+                        credentialsId: 'dockerhub-token',
+                        variable: 'DOCKERHUB_TOKEN'
+                    )
+                ]) {
+                    sh '''
+                        set +x
+
+                        echo "$DOCKERHUB_TOKEN" | docker login \
+                            --username pramay11 \
+                            --password-stdin
+
+                        docker tag devops-employee-project-backend:latest \
+                            pramay11/employee-backend:latest
+
+                        docker tag devops-employee-project-frontend:latest \
+                            pramay11/employee-frontend:latest
+
+                        docker push pramay11/employee-backend:latest
+                        docker push pramay11/employee-frontend:latest
+
+                        docker logout
+                    '''
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo 'CI pipeline and security scans completed successfully!'
+            echo 'CI pipeline, SonarQube analysis, Trivy scans and Docker Hub push completed successfully!'
         }
 
         failure {
-            echo 'Pipeline failed. Check the build and Trivy scan results.'
+            echo 'Pipeline failed. Check the build, security scan and Docker Hub logs.'
         }
 
         always {
