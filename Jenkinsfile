@@ -35,15 +35,41 @@ pipeline {
                 sh 'docker compose build frontend'
             }
         }
+
+        stage('Trivy Backend Scan') {
+            steps {
+                echo 'Scanning backend image for HIGH and CRITICAL vulnerabilities'
+                sh '''
+                    trivy image \
+                    --severity HIGH,CRITICAL \
+                    --exit-code 1 \
+                    --ignore-unfixed \
+                    devops-employee-project-backend:latest
+                '''
+            }
+        }
+
+        stage('Trivy Frontend Scan') {
+            steps {
+                echo 'Scanning frontend image for HIGH and CRITICAL vulnerabilities'
+                sh '''
+                    trivy image \
+                    --severity HIGH,CRITICAL \
+                    --exit-code 1 \
+                    --ignore-unfixed \
+                    devops-employee-project-frontend:latest
+                '''
+            }
+        }
     }
 
     post {
         success {
-            echo 'CI pipeline completed successfully!'
+            echo 'CI pipeline and security scans completed successfully!'
         }
 
         failure {
-            echo 'CI pipeline failed. Check the console output.'
+            echo 'Pipeline failed. Check the build and Trivy scan results.'
         }
 
         always {
