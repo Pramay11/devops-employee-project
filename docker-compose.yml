@@ -16,6 +16,7 @@ services:
       retries: 5
 
   backend:
+    image: devops-employee-project-backend:latest
     build:
       context: ./backend
     container_name: employee-backend
@@ -30,13 +31,14 @@ services:
     restart: unless-stopped
 
   frontend:
+    image: devops-employee-project-frontend:latest
     build:
       context: ./frontend
       args:
         VITE_API_URL: http://localhost:5000/api
     container_name: employee-frontend
     ports:
-      - "8090:80"
+      - "8090:8080"
     depends_on:
       - backend
     restart: unless-stopped
